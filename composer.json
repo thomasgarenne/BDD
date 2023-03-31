@@ -1,0 +1,17 @@
+{
+    "name": "thoma/bdd",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "thomas",
+            "email": "thomas.garenne@outlook.com"
+        }
+    ],
+    "require": {
+        "fakerphp/faker": "^1.21"
+    }
+}
