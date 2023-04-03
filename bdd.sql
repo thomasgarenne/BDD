@@ -70,6 +70,7 @@ CREATE TABLE movies
     language VARCHAR(22) NOT NULL,
     time FLOAT NOT NULL,
     ageLimit VARCHAR(22),
+    director VARCHAR(100),
     PRIMARY KEY (id)
 )
 
@@ -81,9 +82,18 @@ CREATE TABLE category
     PRIMARY KEY (id)
 )
 
-ALTER TABLE movies ADD category JSON
-
-ALTER TABLE movies ADD director VARCHAR(100)
+CREATE TABLE movie_category (
+    movie_id INT NOT NULL,
+    category_id INT NOT NULL,
+    PRIMARY KEY (MOVIE_ID, category_id),
+        FOREIGN KEY (movie_id)
+        REFERENCES movies (id)
+        ON DELETE CASCADE ON UPDATE RESTRICT,
+        FOREIGN KEY (category_id)
+        REFERENCES category (id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+)
 
 CREATE TABLE shows
 (
@@ -122,37 +132,43 @@ CREATE TABLE users
 
 CREATE TABLE customer
 (
+    id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
         FOREIGN KEY (user_id)
-        REFERENCES users(id),
+        REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     student_card BOOLEAN,
     senior_card BOOLEAN,
     payment_method JSON,
-    PRIMARY KEY (user_id)
+    PRIMARY KEY (id)
 )
 
 CREATE TABLE manager
 (
+    id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
         FOREIGN KEY (user_id)
-        REFERENCES users(id),
+        REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     id_cinema INT NOT NULL,
         FOREIGN KEY (id_cinema)
         REFERENCES cinema(id)
-        ON UPDATE CASCADE,
-    PRIMARY KEY (user_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (id)
 )
 
 CREATE TABLE employe
 (
+    id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
         FOREIGN KEY (user_id)
-        REFERENCES users(id),
+        REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     id_cinema INT NOT NULL,
         FOREIGN KEY (id_cinema)
         REFERENCES cinema(id)
-        ON UPDATE CASCADE,
-    PRIMARY KEY (user_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (id)
 )
 
 CREATE TABLE booking
@@ -166,6 +182,11 @@ CREATE TABLE booking
         REFERENCES customer(user_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     id_show INT NOT NULL,
+        FOREIGN KEY (id_show)
+        REFERENCES shows(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (id)
+    id_employe INT,
         FOREIGN KEY (id_show)
         REFERENCES shows(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
