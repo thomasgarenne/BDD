@@ -6,6 +6,7 @@ $pdo = new PDO('mysql:dbname=complex;host=localhost', 'root', '', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
 
+
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 $pdo->exec('TRUNCATE TABLE complex');
 $pdo->exec('TRUNCATE TABLE cinema');
@@ -14,9 +15,7 @@ $pdo->exec('TRUNCATE TABLE movies');
 $pdo->exec('TRUNCATE TABLE shows');
 $pdo->exec('TRUNCATE TABLE booking');
 $pdo->exec('TRUNCATE TABLE category');
-$pdo->exec('TRUNCATE TABLE users');
 $pdo->exec('TRUNCATE TABLE customer');
-$pdo->exec('TRUNCATE TABLE employe');
 $pdo->exec('TRUNCATE TABLE manager');
 $pdo->exec('TRUNCATE TABLE opening_hours');
 $pdo->exec('TRUNCATE TABLE payment');
@@ -46,7 +45,7 @@ foreach ($cinemas as $cinema) {
         $pdo->exec("INSERT INTO halls 
         SET hall_number='$hall',
         cinema_id='$cinema',
-        capacity='{$faker->randomDigit()}'
+        capacity='{$faker->numberBetween(150, 300)}'
         ");
     }
 }
@@ -60,14 +59,15 @@ for ($i = 0; $i < 5; $i++) {
 }
 
 $movies = [];
+$language = ['fr', 'en', 'de', 'es'];
+$ageLimit = [12, 16, 18];
 for ($i = 0; $i < 10; $i++) {
     $pdo->exec("INSERT INTO movies 
                 SET title='{$faker->word()}',
                 description='{$faker->paragraph()}',
-                language='{$faker->randomLetter()}',
-                time='{$faker->randomDigitNotNull()}',
-                ageLimit='{$faker->randomDigitNotNull()}',
-                category='{$faker->randomElement($categories)}',
+                language='{$faker->randomElement($language)}',
+                time='{$faker->numberBetween(1, 3)}',
+                ageLimit='{$faker->randomElement($ageLimit)}',
                 director='{$faker->word()}'
                 ");
     $movies[] = $pdo->lastInsertId();
@@ -82,9 +82,7 @@ foreach ($movies as $movie) {
 
 $password = password_hash('admin', PASSWORD_BCRYPT);
 
-$person = [];
-for ($i = 0; $i < 5; $i++) {
-    $pdo->exec("INSERT INTO users 
+$pdo->exec("INSERT INTO customer
     SET email='{$faker->email()}',
     passw='$password',
     phone='{$faker->e164PhoneNumber()}',
@@ -93,27 +91,21 @@ for ($i = 0; $i < 5; $i++) {
     age='{$faker->randomDigit()}',
     address='{$faker->address()}', 
     postal_code='{$faker->postcode()}', 
-    ville='{$faker->city()}'
-    ");
-    $person[] = $pdo->lastInsertId();
-}
-
-$pdo->exec("INSERT INTO customer
-    SET user_id = {$faker->randomElement($person)},
-    student_card = 0,
-    senior_card = 0
+    city='{$faker->city()}'
     ");
 
 $pdo->exec("INSERT INTO manager
-    SET user_id = {$faker->randomElement($person)},
-    id_cinema = {$faker->randomElement($cinemas)}
+    SET email='{$faker->email()}',
+    passw='$password',
+    phone='{$faker->e164PhoneNumber()}',
+    firstname='{$faker->firstName()}',
+    lastname='{$faker->lastName()}',
+    age='{$faker->randomDigit()}',
+    address='{$faker->address()}', 
+    postal_code='{$faker->postcode()}', 
+    city='{$faker->city()}',
+    id_cinema='{$faker->numberBetween(1, 5)}'
     ");
-
-$pdo->exec("INSERT INTO employe
-    SET user_id = {$faker->randomElement($person)},
-    id_cinema = {$faker->randomElement($cinemas)}
-    ");
-
 
 $shows = [];
 foreach ($cinemas as $cinema) {
@@ -148,7 +140,7 @@ foreach ($booking as $book) {
     ");
 }
 
-$days = ['m', 't', 'w', 'th', 'f', 's', 'su'];
+$days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 foreach ($cinemas as $cinema) {
     foreach ($days as $day) {

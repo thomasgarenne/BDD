@@ -23,31 +23,17 @@ CREATE TABLE cinema
     PRIMARY KEY (id)
 )
 
-ALTER TABLE cinema MODIFY name VARCHAR(255) NOT NULL UNIQUE
-
 CREATE TABLE halls
 (
     id INT NOT NULL AUTO_INCREMENT,
     hall_number INT NOT NULL,
     cinema_id INT NOT NULL,
+    capacity INT NOT NULL CHECK (capacity >= 0),
     FOREIGN KEY (cinema_id)
         REFERENCES cinema(id)
         ON DELETE CASCADE,
     PRIMARY KEY (id)
 )
-
-ALTER TABLE halls ADD capacity INT NOT NULL
-ALTER TABLE halls ADD CHECK (capacity>=0);
-
-CREATE TABLE opening_hours
-(
-    id INT NOT NULL AUTO_INCREMENT,
-    day VARCHAR(22) NOT NULL,
-    open VARCHAR(22) NOT NULL,
-    close VARCHAR(22) NOT NULL,
-)
-
-DROP TABLE opening_hours
 
 CREATE TABLE opening_hours
 (
@@ -102,15 +88,15 @@ CREATE TABLE shows
     id_movie INT NOT NULL,
         FOREIGN KEY (id_movie)
         REFERENCES movies(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        ON DELETE CASCADE,
     id_hall INT NOT NULL,
         FOREIGN KEY (id_hall)
         REFERENCES halls(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        ON DELETE CASCADE,
     id_cinema INT NOT NULL,
         FOREIGN KEY (id_cinema)
         REFERENCES cinema(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        ON DELETE CASCADE,
     PRIMARY KEY (id, dates, id_hall)
 )
 
@@ -119,7 +105,7 @@ CREATE TABLE users
     id INT NOT NULL AUTO_INCREMENT,
     email VARCHAR(50) NOT NULL,
     passw VARCHAR(255) NOT NULL,
-    phone VARCHAR(22),
+    phone VARCHAR(22) NOT NULL,
     firstname VARCHAR(30) NOT NULL,
     lastname VARCHAR(30) NOT NULL,
     age INT NOT NULL,
@@ -133,12 +119,18 @@ CREATE TABLE users
 CREATE TABLE customer
 (
     id INT NOT NULL AUTO_INCREMENT,
-    user_id INT NOT NULL,
-        FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    student_card BOOLEAN,
-    senior_card BOOLEAN,
+    email VARCHAR(50) NOT NULL,
+    passw VARCHAR(255) NOT NULL,
+    phone VARCHAR(22) NOT NULL,
+    firstname VARCHAR(30) NOT NULL,
+    lastname VARCHAR(30) NOT NULL,
+    age INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    postal_code VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    student_card BOOLEAN CHECK (age < 16 = true),
+    senior_card BOOLEAN CHECK (age > 64 = true),
+    roles JSON DEFAULT 'ROLE_USER',
     payment_method JSON,
     PRIMARY KEY (id)
 )
@@ -146,24 +138,16 @@ CREATE TABLE customer
 CREATE TABLE manager
 (
     id INT NOT NULL AUTO_INCREMENT,
-    user_id INT NOT NULL,
-        FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    id_cinema INT NOT NULL,
-        FOREIGN KEY (id_cinema)
-        REFERENCES cinema(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id)
-)
-
-CREATE TABLE employe
-(
-    id INT NOT NULL AUTO_INCREMENT,
-    user_id INT NOT NULL,
-        FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+    email VARCHAR(50) NOT NULL,
+    passw VARCHAR(255) NOT NULL,
+    phone VARCHAR(22),
+    firstname VARCHAR(30) NOT NULL,
+    lastname VARCHAR(30) NOT NULL,
+    age INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    postal_code VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    role JSON,
     id_cinema INT NOT NULL,
         FOREIGN KEY (id_cinema)
         REFERENCES cinema(id)
@@ -179,17 +163,16 @@ CREATE TABLE booking
     price FLOAT NOT NULL,
     id_customer INT NOT NULL,
         FOREIGN KEY (id_customer)
-        REFERENCES customer(user_id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        REFERENCES customer(id)
+        ON DELETE CASCADE,
     id_show INT NOT NULL,
         FOREIGN KEY (id_show)
         REFERENCES shows(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id)
+        ON DELETE CASCADE,
     id_employe INT,
-        FOREIGN KEY (id_show)
-        REFERENCES shows(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (id_employe)
+        REFERENCES employe(id)
+        ON DELETE CASCADE,
     PRIMARY KEY (id)
 )
 
@@ -203,7 +186,3 @@ CREATE TABLE payment
     status BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 )
-
-ALTER TABLE booking ADD id_employe INT
-
-ALTER TABLE booking ADD FOREIGN KEY (id_employe) REFERENCES employe(user_id)
