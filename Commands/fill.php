@@ -86,6 +86,7 @@ foreach ($movies as $movie) {
 }
 
 //TABLE CUSTOMER
+$role = json_encode('ROLE_USER');
 $password = password_hash('admin', PASSWORD_BCRYPT);
 $customers = [];
 for ($i = 0; $i < 5; $i++) {
@@ -99,7 +100,9 @@ for ($i = 0; $i < 5; $i++) {
     address='{$faker->address()}', 
     postal_code='{$faker->postcode()}', 
     city='{$faker->city()}',
-    student_card = '{$faker->numberBetween(0, 1)}'
+    student_card = '{$faker->numberBetween(0, 1)}',
+    senior_card=0,
+    role='$role'
     ");
     $customers[] = $pdo->lastInsertId();
 }
@@ -112,7 +115,9 @@ $pdo->exec("UPDATE customer
         ");
 
 //TABLE MANAGER
-$pdo->exec("INSERT INTO manager
+foreach ($cinemas as $cinema) {
+    $role = json_encode('ROLE_MANAGER');
+    $pdo->exec("INSERT INTO manager
     SET email='{$faker->email()}',
     passw='$password',
     phone='{$faker->e164PhoneNumber()}',
@@ -122,9 +127,25 @@ $pdo->exec("INSERT INTO manager
     address='{$faker->address()}', 
     postal_code='{$faker->postcode()}', 
     city='{$faker->city()}',
-    id_cinema='{$faker->numberBetween(1, 5)}'
+    id_cinema='$cinema',
+    role='$role'
     ");
+}
 
+$role = json_encode('ROLE_ADMIN');
+$pdo->exec("INSERT INTO manager
+            SET email='admin.admin.admin',
+            passw='admin',
+            phone='0000000000',
+            firstname='admin',
+            lastname='admin',
+            age=11,
+            address='address',
+            postal_code='00000',
+            city='city',
+            id_cinema=1,
+            role='$role'
+            ");
 
 //TABLE SHOW
 $shows = [];
@@ -165,8 +186,8 @@ $pdo->exec("UPDATE booking
             ON booking.id_customer = customer.id
             SET price =
             CASE 
-            WHEN customer.age < 15 THEN '5.60'
-            WHEN student_card = 1 THEN '7.20'
+            WHEN customer.age < 15 THEN '5.90'
+            WHEN student_card = 1 THEN '7.60'
             ELSE '9.20'
             END
         ");
