@@ -1,12 +1,11 @@
 <?php
 
-//require_once 'vendor/autoload.php';
-
+//CONNEXION BDD
 $pdo = new PDO('mysql:dbname=complex;host=localhost', 'root', '', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
 
-
+//REINITIALISE BDD
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 $pdo->exec('TRUNCATE TABLE complex');
 $pdo->exec('TRUNCATE TABLE cinema');
@@ -22,10 +21,13 @@ $pdo->exec('TRUNCATE TABLE payment');
 $pdo->exec('TRUNCATE TABLE movie_category');
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
+//CREER DE FAUSSE DONNEES
 $faker = Faker\Factory::create();
 
+//TABLE COMPLEX
 $pdo->exec("INSERT INTO complex SET name='{$faker->sentence()}', nb_cinema=5");
 
+//TABLE CINEMA
 $cinemas = [];
 for ($i = 0; $i < 5; $i++) {
     $pdo->exec("INSERT INTO cinema 
@@ -38,8 +40,8 @@ for ($i = 0; $i < 5; $i++) {
     $cinemas[] = $pdo->lastInsertId();
 }
 
+//TABLE HALL
 $halls = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
 foreach ($cinemas as $cinema) {
     foreach ($halls as $hall) {
         $pdo->exec("INSERT INTO halls 
@@ -50,6 +52,7 @@ foreach ($cinemas as $cinema) {
     }
 }
 
+//TABLE CATEGORY
 $categories = [];
 for ($i = 0; $i < 5; $i++) {
     $pdo->exec("INSERT INTO category 
@@ -58,6 +61,7 @@ for ($i = 0; $i < 5; $i++) {
     $categories[] = $pdo->lastInsertId();
 }
 
+//TABLE MOVIES
 $movies = [];
 $language = ['fr', 'en', 'de', 'es'];
 $ageLimit = [12, 16, 18];
@@ -73,6 +77,7 @@ for ($i = 0; $i < 10; $i++) {
     $movies[] = $pdo->lastInsertId();
 }
 
+//TABLE MOVIE_CATEGORY
 foreach ($movies as $movie) {
     $randomCategories = $faker->randomElements($categories, rand(0, count($categories)));
     foreach ($randomCategories as $category) {
@@ -80,20 +85,33 @@ foreach ($movies as $movie) {
     }
 }
 
+//TABLE CUSTOMER
 $password = password_hash('admin', PASSWORD_BCRYPT);
-
-$pdo->exec("INSERT INTO customer
+$customers = [];
+for ($i = 0; $i < 5; $i++) {
+    $pdo->exec("INSERT INTO customer
     SET email='{$faker->email()}',
     passw='$password',
     phone='{$faker->e164PhoneNumber()}',
     firstname='{$faker->firstName()}',
     lastname='{$faker->lastName()}',
-    age='{$faker->randomDigit()}',
+    age='{$faker->numberBetween(3, 56)}',
     address='{$faker->address()}', 
     postal_code='{$faker->postcode()}', 
-    city='{$faker->city()}'
+    city='{$faker->city()}',
+    student_card = '{$faker->numberBetween(0, 1)}'
     ");
+    $customers[] = $pdo->lastInsertId();
+}
 
+$pdo->exec("UPDATE customer
+            SET student_card =
+            CASE 
+            WHEN customer.age < 15 THEN '0'
+            END
+        ");
+
+//TABLE MANAGER
 $pdo->exec("INSERT INTO manager
     SET email='{$faker->email()}',
     passw='$password',
@@ -107,6 +125,8 @@ $pdo->exec("INSERT INTO manager
     id_cinema='{$faker->numberBetween(1, 5)}'
     ");
 
+
+//TABLE SHOW
 $shows = [];
 foreach ($cinemas as $cinema) {
     foreach ($halls as $hall) {
@@ -119,19 +139,54 @@ foreach ($cinemas as $cinema) {
     }
 }
 
+//CONVERT CAPACITY HALL ON SEAT SHOW
+$pdo->exec("UPDATE shows 
+            JOIN halls ON shows.id_hall = halls.id
+            SET seats = capacity
+            ");
+
+//TABLE BOOKING
 $booking = [];
-for ($i = 0; $i < 10; $i++) {
+foreach ($customers as $customer) {
     $pdo->exec("INSERT INTO booking 
                 SET created_on = '{$faker->date} {$faker->time}',
                 quantity = '{$faker->randomDigit()}',
-                price = 8,
-                id_customer=1,
+                price = '9.2',
+                id_customer=$customer,
                 id_show='{$faker->randomElement($shows)}',
                 id_employe = 1
                 ");
     $booking[] = $pdo->lastInsertId();
 }
 
+//PRICE FOR CUSTOMER
+$pdo->exec("UPDATE booking 
+            JOIN customer 
+            ON booking.id_customer = customer.id
+            SET price =
+            CASE 
+            WHEN customer.age < 15 THEN '5.60'
+            WHEN student_card = 1 THEN '7.20'
+            ELSE '9.20'
+            END
+        ");
+
+//MAJ BOOKING -> SEATS
+$pdo->exec("INSERT INTO booking 
+            SET created_on='{$faker->date} {$faker->time}',
+            quantity= 50,
+            price= '9.2',
+            id_customer= 1,
+            id_show= 4,
+            id_employe= 1
+            ");
+
+$pdo->exec("UPDATE shows JOIN booking 
+            ON shows.id = booking.id_show
+            SET seats = seats - booking.quantity
+            ");
+
+//TABLE PAYMENT
 foreach ($booking as $book) {
     $pdo->exec("INSERT INTO payment
     SET created_on ='{$faker->date} {$faker->time}',
@@ -140,8 +195,8 @@ foreach ($booking as $book) {
     ");
 }
 
+//TABLE OPENING_HOURS
 $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-
 foreach ($cinemas as $cinema) {
     foreach ($days as $day) {
         $pdo->exec("INSERT INTO opening_hours

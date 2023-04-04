@@ -100,6 +100,9 @@ CREATE TABLE shows
     PRIMARY KEY (id, dates, id_hall)
 )
 
+ALTER TABLE shows ADD seats INT NOT NULL
+ALTER TABLE shows ADD CONSTRAINT CHECK (seats >=0)
+
 CREATE TABLE users
 (
     id INT NOT NULL AUTO_INCREMENT,
