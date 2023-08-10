@@ -1,7 +1,7 @@
 <?php
 
 //CONNEXION BDD
-$pdo = new PDO('mysql:dbname=complex;host=localhost', 'root', '', [
+$pdo = new PDO('mysql:dbname=complex;host=localhost', 'root', 'root', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
 
@@ -100,9 +100,9 @@ for ($i = 0; $i < 5; $i++) {
     address='{$faker->address()}', 
     postal_code='{$faker->postcode()}', 
     city='{$faker->city()}',
-    student_card = '{$faker->numberBetween(0, 1)}',
+    student_card = 1,
     senior_card=0,
-    role='$role'
+    roles='$role'
     ");
     $customers[] = $pdo->lastInsertId();
 }
@@ -115,6 +115,7 @@ $pdo->exec("UPDATE customer
         ");
 
 //TABLE MANAGER
+
 foreach ($cinemas as $cinema) {
     $role = json_encode('ROLE_MANAGER');
     $pdo->exec("INSERT INTO manager
@@ -174,8 +175,7 @@ foreach ($customers as $customer) {
                 quantity = '{$faker->randomDigit()}',
                 price = '9.2',
                 id_customer=$customer,
-                id_show='{$faker->randomElement($shows)}',
-                id_employe = 1
+                id_show='{$faker->randomElement($shows)}'
                 ");
     $booking[] = $pdo->lastInsertId();
 }
@@ -198,8 +198,7 @@ $pdo->exec("INSERT INTO booking
             quantity= 50,
             price= '9.2',
             id_customer= 1,
-            id_show= 4,
-            id_employe= 1
+            id_show= 4
             ");
 
 $pdo->exec("UPDATE shows JOIN booking 

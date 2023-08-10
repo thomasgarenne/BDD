@@ -5,5 +5,5 @@ return
         'dbname' => 'complex',
         'dbhost' => 'localhost',
         'username' => 'root',
-        'password' => ''
+        'password' => 'root'
     ];

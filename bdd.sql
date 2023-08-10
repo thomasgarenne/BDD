@@ -1,4 +1,4 @@
-CREATE DATABASE complex
+CREATE DATABASE complex;
 
 CREATE TABLE complex 
 (
@@ -6,7 +6,7 @@ CREATE TABLE complex
     name VARCHAR(255) NOT NULL,
     nb_cinema INT NOT NULL,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE cinema
 (
@@ -21,7 +21,7 @@ CREATE TABLE cinema
         REFERENCES complex(id)
         ON DELETE CASCADE,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE halls
 (
@@ -33,7 +33,7 @@ CREATE TABLE halls
         REFERENCES cinema(id)
         ON DELETE CASCADE,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE opening_hours
 (
@@ -46,7 +46,7 @@ CREATE TABLE opening_hours
         REFERENCES cinema(id)
         ON DELETE CASCADE,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE movies
 (
@@ -58,7 +58,7 @@ CREATE TABLE movies
     ageLimit VARCHAR(22),
     director VARCHAR(100),
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE category
 (
@@ -66,7 +66,7 @@ CREATE TABLE category
     title VARCHAR(22) NOT NULL,
     description VARCHAR(255),
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE movie_category (
     movie_id INT NOT NULL,
@@ -79,12 +79,13 @@ CREATE TABLE movie_category (
         REFERENCES category (id)
         ON DELETE CASCADE
         ON UPDATE RESTRICT
-)
+);
 
 CREATE TABLE shows
 (
     id INT NOT NULL AUTO_INCREMENT,
     dates DATETIME DEFAULT NOW(),
+    seats INT NOT NULL CHECK (seats >=0),
     id_movie INT NOT NULL,
         FOREIGN KEY (id_movie)
         REFERENCES movies(id)
@@ -98,10 +99,7 @@ CREATE TABLE shows
         REFERENCES cinema(id)
         ON DELETE CASCADE,
     PRIMARY KEY (id, dates, id_hall)
-)
-
-ALTER TABLE shows ADD seats INT NOT NULL
-ALTER TABLE shows ADD CONSTRAINT CHECK (seats >=0)
+);
 
 CREATE TABLE users
 (
@@ -117,7 +115,7 @@ CREATE TABLE users
     ville VARCHAR(255) NOT NULL,
     roles JSON,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE customer
 (
@@ -131,12 +129,12 @@ CREATE TABLE customer
     address VARCHAR(255) NOT NULL,
     postal_code VARCHAR(255) NOT NULL,
     city VARCHAR(255) NOT NULL,
-    student_card BOOLEAN CHECK (age < 16 = true),
-    senior_card BOOLEAN CHECK (age > 64 = true),
+    student_card BOOLEAN,
+    senior_card BOOLEAN,
     roles JSON DEFAULT 'ROLE_USER',
     payment_method JSON,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE manager
 (
@@ -156,7 +154,7 @@ CREATE TABLE manager
         REFERENCES cinema(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE booking
 (
@@ -172,12 +170,8 @@ CREATE TABLE booking
         FOREIGN KEY (id_show)
         REFERENCES shows(id)
         ON DELETE CASCADE,
-    id_employe INT,
-        FOREIGN KEY (id_employe)
-        REFERENCES employe(id)
-        ON DELETE CASCADE,
     PRIMARY KEY (id)
-)
+);
 
 CREATE TABLE payment
 (
@@ -188,4 +182,4 @@ CREATE TABLE payment
         REFERENCES booking(id),
     status BOOLEAN NOT NULL,
     PRIMARY KEY (id)
-)
+);

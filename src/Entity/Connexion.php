@@ -15,7 +15,7 @@ class Connexion extends PDO
 
     public function __construct()
     {
-        $config = require_once('../config.php');
+        $config = require_once('../../config.php');
 
         if (isset($config)) {
             $this->dbname = $config['dbname'];
